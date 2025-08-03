@@ -19,7 +19,8 @@ fi
 
 # Start the application
 echo "Starting application..."
-java -Dmanagement.metrics.binders.processor.enabled=false \
+java -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:-prod} \
+     -Dmanagement.metrics.binders.processor.enabled=false \
      -Dmanagement.metrics.binders.jvm.enabled=false \
      -Dmanagement.metrics.binders.system.enabled=false \
      -Dmanagement.metrics.enable.jvm=false \
