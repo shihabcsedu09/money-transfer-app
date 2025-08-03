@@ -5,6 +5,7 @@ import com.moneytransfer.dto.TransferResponse;
 import com.moneytransfer.exception.InsufficientFundsException;
 import com.moneytransfer.exception.TransferException;
 import com.moneytransfer.service.TransferService;
+import com.moneytransfer.repository.AccountRepository;
 import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -33,9 +34,11 @@ public class TransferController {
     private static final Logger logger = LoggerFactory.getLogger(TransferController.class);
 
     private final TransferService transferService;
+    private final AccountRepository accountRepository;
 
-    public TransferController(TransferService transferService) {
+    public TransferController(TransferService transferService, AccountRepository accountRepository) {
         this.transferService = transferService;
+        this.accountRepository = accountRepository;
     }
 
     /**
@@ -43,11 +46,12 @@ public class TransferController {
      */
     @PostMapping
     public ResponseEntity<TransferResponse> processTransfer(@Valid @RequestBody TransferRequest request) {
-        logger.info("Received transfer request: {}", request);
+        logger.info("Received transfer request: fromAccount={}, toAccount={}, amount={}, currency={}", 
+                   request.getFromAccountNumber(), request.getToAccountNumber(), request.getAmount(), request.getCurrency());
         
         try {
             TransferResponse response = transferService.processTransfer(request);
-            logger.info("Transfer processed successfully: {}", response.getTransferId());
+            logger.info("Transfer processed successfully: transferId={}, status={}", response.getTransferId(), response.getStatus());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (InsufficientFundsException e) {
             logger.warn("Insufficient funds for transfer: {}", e.getMessage());
@@ -55,6 +59,9 @@ public class TransferController {
         } catch (TransferException e) {
             logger.error("Transfer processing failed: {}", e.getMessage());
             throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error during transfer: {}", e.getMessage(), e);
+            throw new TransferException("Unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -72,6 +79,32 @@ public class TransferController {
             logger.warn("Transfer not found: {}", transferId);
             throw e;
         }
+    }
+
+    /**
+     * Check if accounts exist (for debugging).
+     */
+    @GetMapping("/debug/accounts")
+    public ResponseEntity<Map<String, Object>> checkAccounts() {
+        logger.info("Checking accounts in database...");
+        
+        Map<String, Object> response = new HashMap<>();
+        long accountCount = accountRepository.count();
+        response.put("totalAccounts", accountCount);
+        
+        if (accountCount > 0) {
+            response.put("sampleAccounts", accountRepository.findAll().stream()
+                .limit(5)
+                .map(account -> Map.of(
+                    "accountNumber", account.getAccountNumber(),
+                    "balance", account.getBalance(),
+                    "currency", account.getCurrency().name()
+                ))
+                .toList());
+        }
+        
+        response.put("message", accountCount > 0 ? "Accounts found" : "No accounts found");
+        return ResponseEntity.ok(response);
     }
 
 
