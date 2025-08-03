@@ -1,6 +1,6 @@
 # Money Transfer Application
 
-A robust Spring Boot application that demonstrates proper handling of concurrency, atomicity, and deadlock prevention in financial systems.
+A robust Spring Boot application that demonstrates proper handling of concurrency, atomicity, and deadlock prevention in financial systems. **Now with automatic versioning and Railway deployment!**
 
 ## 🎯 Why This Matters for Financial Applications
 
@@ -10,7 +10,7 @@ Financial applications must handle multiple users transferring money simultaneou
 
 1. **Race Conditions**: When two transfers happen at the same time
    - **Problem**: Both transfers read the same balance, leading to incorrect final balance
-   - **Solution**: Distributed locking with Redisson prevents simultaneous access
+   - **Solution**: In-memory locking with `ReentrantLock` prevents simultaneous access
 
 2. **Deadlocks**: When two transfers wait for each other's locks
    - **Problem**: Transfer A locks Account 1, Transfer B locks Account 2, then both wait for the other
@@ -38,9 +38,13 @@ mvn spring-boot:run
 
 ### Test the API
 ```bash
-# Transfer money
+# Health check (no auth required)
+curl http://localhost:8080/ping
+
+# Transfer money (requires authentication)
 curl -X POST http://localhost:8080/api/v1/transfers \
   -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
   -d '{
     "fromAccountNumber": "ACC001234567890",
     "toAccountNumber": "ACC002345678901", 
@@ -50,16 +54,17 @@ curl -X POST http://localhost:8080/api/v1/transfers \
   }'
 
 # Check transfer status
-curl http://localhost:8080/api/v1/transfers/{transferId}
+curl -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
+  http://localhost:8080/api/v1/transfers/{transferId}
 ```
 
 ## 🔧 How Concurrency is Handled
 
-### 1. **Distributed Locking** - Preventing Race Conditions
+### 1. **In-Memory Locking** - Preventing Race Conditions
 
 **The Problem**: Imagine two people trying to withdraw money from the same account at exactly the same time. Both see the balance is $1000, both try to withdraw $800. Without locking, both might succeed, leaving the account with -$600 instead of $200!
 
-**The Solution**: We use locks to ensure only one transfer can access an account at a time.
+**The Solution**: We use `ReentrantLock` to ensure only one transfer can access an account at a time.
 
 ```java
 // Lock both accounts before transfer
@@ -188,23 +193,31 @@ The application includes comprehensive tests that demonstrate:
 
 ```java
 @Test
-void testConcurrentTransfers() {
-    // 10 threads, 5 transfers each = 50 concurrent transfers
-    int numberOfThreads = 10;
-    int transfersPerThread = 5;
-    
-    // All transfers should complete successfully
-    // Final balances should be mathematically correct
+void testBasicTransfer() {
+    // Tests basic transfer functionality
+    TransferResponse response = transferService.processTransfer(request);
+    assertEquals("COMPLETED", response.getStatus().name());
+}
+
+@Test
+void testMultipleTransfers() {
+    // Tests multiple sequential transfers
+    for (int i = 0; i < 3; i++) {
+        TransferResponse response = transferService.processTransfer(request);
+        assertEquals("COMPLETED", response.getStatus().name());
+    }
 }
 ```
 
 ## 📊 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/transfers` | Create a new transfer |
-| GET | `/api/v1/transfers/{id}` | Get transfer details |
-| GET | `/api/v1/transfers/health` | Health check |
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| GET | `/ping` | ❌ | Health check |
+| GET | `/` | ❌ | Root endpoint with status |
+| GET | `/actuator/health` | ❌ | Detailed health check |
+| POST | `/api/v1/transfers` | ✅ | Create a new transfer |
+| GET | `/api/v1/transfers/{id}` | ✅ | Get transfer details |
 
 ## 🏗️ Architecture
 
@@ -213,19 +226,22 @@ void testConcurrentTransfers() {
 │   Controller    │    │     Service     │    │   Repository    │
 │                 │    │                 │    │                 │
 │ • REST API      │───▶│ • Business Logic│───▶│ • Data Access   │
-│ • Validation    │    │ • Distributed   │    │ • Locking       │
-│ • Error Handling│    │   Locking       │    │ • Transactions  │
+│ • Validation    │    │ • In-Memory     │    │ • Locking       │
+│ • Security      │    │   Locking       │    │ • Transactions  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ## 🔍 Key Features
 
-- ✅ **Distributed Locking**: Prevents race conditions across multiple instances
+- ✅ **In-Memory Locking**: Prevents race conditions with `ReentrantLock`
 - ✅ **Deadlock Prevention**: Ordered locking strategy
 - ✅ **Atomic Transactions**: All-or-nothing transfer operations
 - ✅ **Optimistic Locking**: Version-based concurrency control
+- ✅ **Spring Security**: Protected API endpoints with Basic Auth
 - ✅ **Comprehensive Testing**: Concurrency stress tests
 - ✅ **Error Handling**: Proper rollback on failures
+- ✅ **Railway Deployment**: Live production deployment
+- ✅ **Auto Versioning**: Automatic releases on every push
 
 ## 🚀 Live Demo
 
@@ -236,9 +252,16 @@ void testConcurrentTransfers() {
 ### Test the Live API
 
 ```bash
-# Transfer money
+# Health check (no authentication required)
+curl https://money-transfer-app-production-9d8e.up.railway.app/ping
+
+# Root endpoint
+curl https://money-transfer-app-production-9d8e.up.railway.app/
+
+# Transfer money (requires authentication)
 curl -X POST https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers \
   -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
   -d '{
     "fromAccountNumber": "ACC001234567890",
     "toAccountNumber": "ACC002345678901", 
@@ -248,11 +271,14 @@ curl -X POST https://money-transfer-app-production-9d8e.up.railway.app/api/v1/tr
   }'
 
 # Check transfer status
-curl https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/{transferId}
-
-# Health check
-curl https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/health
+curl -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
+  https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/{transferId}
 ```
+
+### Authentication
+- **Username**: `admin`
+- **Password**: `admin123`
+- **Basic Auth Header**: `Authorization: Basic YWRtaW46YWRtaW4xMjM=`
 
 ### Sample Account Numbers for Testing
 - `ACC001234567890` - John Doe (USD: $10,000)
@@ -273,6 +299,7 @@ mvn spring-boot:run
 # Test API
 curl -X POST http://localhost:8080/api/v1/transfers \
   -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
   -d '{
     "fromAccountNumber": "ACC001234567890",
     "toAccountNumber": "ACC002345678901", 
@@ -282,35 +309,33 @@ curl -X POST http://localhost:8080/api/v1/transfers \
   }'
 ```
 
-## 🚀 Releases & Packages
+## 🚀 Automatic Versioning & Releases
 
-### **Creating a Release**
+### **How It Works**
 
-To create a new release with artifacts and packages:
+Every push to the `main` branch automatically triggers:
+
+1. **🏷️ Version Detection**: Determines the next version number
+2. **📦 Build Process**: Compiles and tests the application
+3. **🏷️ Tag Creation**: Creates a Git tag (v1.0.0, v1.0.1, etc.)
+4. **📦 Release Creation**: Creates a GitHub Release with artifacts
+5. **🐳 Package Publishing**: Publishes Docker image to GitHub Container Registry
+
+### **Version Progression**
 
 ```bash
-# Make sure you're on main branch and have clean working directory
-git checkout main
-git pull origin main
-
-# Create a release (this will trigger GitHub Actions)
-./scripts/create-release.sh 1.0.1
+# First push → v1.0.0
+# Second push → v1.0.1
+# Third push → v1.0.2
+# And so on...
 ```
 
-### **What Gets Created**
+### **What Gets Created Automatically**
 
-When you create a release, GitHub Actions will automatically:
-
-1. **🏷️ Create a Release**: With detailed changelog and documentation
-2. **📦 Build JAR**: Executable JAR file for deployment
-3. **🐳 Build Docker Image**: Multi-platform Docker image
-4. **📦 Publish Packages**: To GitHub Container Registry
-
-### **Available Artifacts**
-
-- **JAR File**: `money-transfer-app-{version}.jar` - Ready to run
-- **Docker Image**: `ghcr.io/shihabcsedu09/money-transfer-app:{version}` - Containerized
-- **Source Code**: Tagged release with full source
+- **📦 JAR File**: `money-transfer-app-v1.0.0.jar` - Ready to run
+- **🐳 Docker Image**: `ghcr.io/shihabcsedu09/money-transfer-app:v1.0.0` - Containerized
+- **📋 GitHub Release**: With detailed changelog and documentation
+- **🏷️ Git Tag**: Versioned tag for tracking
 
 ### **Using the Docker Image**
 
@@ -322,14 +347,37 @@ docker pull ghcr.io/shihabcsedu09/money-transfer-app:latest
 docker run -p 8080:8080 ghcr.io/shihabcsedu09/money-transfer-app:latest
 
 # Run specific version
-docker run -p 8080:8080 ghcr.io/shihabcsedu09/money-transfer-app:1.0.0
+docker run -p 8080:8080 ghcr.io/shihabcsedu09/money-transfer-app:v1.0.0
 ```
 
 ### **GitHub Actions Workflows**
 
 - **CI**: Runs on every push/PR - tests and builds
-- **Release**: Creates releases when tags are pushed
-- **Package**: Publishes Docker images to GitHub Container Registry
+- **Auto Release**: Creates releases automatically on every push to main
+- **Auto Package**: Publishes Docker images to GitHub Container Registry
+
+## 🔧 Deployment
+
+### **Railway Deployment**
+
+The application is automatically deployed to Railway with:
+
+- **Health Checks**: `/ping` endpoint for monitoring
+- **Production Profile**: Optimized for containerized environment
+- **Metrics Disabled**: Prevents container-related issues
+- **Security**: Protected endpoints with authentication
+
+### **Environment Variables**
+
+```bash
+SPRING_PROFILES_ACTIVE=prod
+PORT=8080
+MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info
+MANAGEMENT_METRICS_ENABLE_JVM=false
+MANAGEMENT_METRICS_ENABLE_PROCESSOR=false
+MANAGEMENT_METRICS_ENABLE_SYSTEM=false
+MANAGEMENT_METRICS_ENABLE_TOMCAT=false
+```
 
 ## 📝 License
 
