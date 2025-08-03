@@ -282,6 +282,55 @@ curl -X POST http://localhost:8080/api/v1/transfers \
   }'
 ```
 
+## 🚀 Releases & Packages
+
+### **Creating a Release**
+
+To create a new release with artifacts and packages:
+
+```bash
+# Make sure you're on main branch and have clean working directory
+git checkout main
+git pull origin main
+
+# Create a release (this will trigger GitHub Actions)
+./scripts/create-release.sh 1.0.1
+```
+
+### **What Gets Created**
+
+When you create a release, GitHub Actions will automatically:
+
+1. **🏷️ Create a Release**: With detailed changelog and documentation
+2. **📦 Build JAR**: Executable JAR file for deployment
+3. **🐳 Build Docker Image**: Multi-platform Docker image
+4. **📦 Publish Packages**: To GitHub Container Registry
+
+### **Available Artifacts**
+
+- **JAR File**: `money-transfer-app-{version}.jar` - Ready to run
+- **Docker Image**: `ghcr.io/shihabcsedu09/money-transfer-app:{version}` - Containerized
+- **Source Code**: Tagged release with full source
+
+### **Using the Docker Image**
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/shihabcsedu09/money-transfer-app:latest
+
+# Run the application
+docker run -p 8080:8080 ghcr.io/shihabcsedu09/money-transfer-app:latest
+
+# Run specific version
+docker run -p 8080:8080 ghcr.io/shihabcsedu09/money-transfer-app:1.0.0
+```
+
+### **GitHub Actions Workflows**
+
+- **CI**: Runs on every push/PR - tests and builds
+- **Release**: Creates releases when tags are pushed
+- **Package**: Publishes Docker images to GitHub Container Registry
+
 ## 📝 License
 
 MIT License 
