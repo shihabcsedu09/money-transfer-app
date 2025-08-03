@@ -1,0 +1,28 @@
+-------------------------------------------------------------------------------
+Test set: com.moneytransfer.service.TransferServiceConcurrencyTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 1, Errors: 3, Skipped: 0, Time elapsed: 6.89 s <<< FAILURE! - in com.moneytransfer.service.TransferServiceConcurrencyTest
+testConcurrentTransfers  Time elapsed: 0.615 s  <<< ERROR!
+org.springframework.dao.InvalidDataAccessApiUsageException: no transaction is in progress; nested exception is javax.persistence.TransactionRequiredException: no transaction is in progress
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.testConcurrentTransfers(TransferServiceConcurrencyTest.java:110)
+Caused by: javax.persistence.TransactionRequiredException: no transaction is in progress
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.testConcurrentTransfers(TransferServiceConcurrencyTest.java:110)
+
+testInsufficientFundsHandling  Time elapsed: 0.02 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: Unexpected exception type thrown ==> expected: <com.moneytransfer.exception.InsufficientFundsException> but was: <com.moneytransfer.exception.TransferException>
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.testInsufficientFundsHandling(TransferServiceConcurrencyTest.java:207)
+Caused by: com.moneytransfer.exception.TransferException: Transfer processing failed: Insufficient funds in account: TEST002345678901
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.lambda$testInsufficientFundsHandling$3(TransferServiceConcurrencyTest.java:208)
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.testInsufficientFundsHandling(TransferServiceConcurrencyTest.java:207)
+Caused by: com.moneytransfer.exception.InsufficientFundsException: Insufficient funds in account: TEST002345678901
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.lambda$testInsufficientFundsHandling$3(TransferServiceConcurrencyTest.java:208)
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.testInsufficientFundsHandling(TransferServiceConcurrencyTest.java:207)
+
+testBidirectionalConcurrentTransfers  Time elapsed: 0.045 s  <<< ERROR!
+java.util.concurrent.CompletionException: org.opentest4j.AssertionFailedError: Transfer 2 failed: could not extract ResultSet; SQL [n/a]; nested exception is org.hibernate.exception.LockAcquisitionException: could not extract ResultSet
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.lambda$testBidirectionalConcurrentTransfers$2(TransferServiceConcurrencyTest.java:172)
+
+testConcurrentInsufficientFunds  Time elapsed: 0.046 s  <<< ERROR!
+java.util.concurrent.CompletionException: org.opentest4j.AssertionFailedError: Unexpected exception: Transfer processing failed: Insufficient funds in account: TEST002345678901
+	at com.moneytransfer.service.TransferServiceConcurrencyTest.lambda$testConcurrentInsufficientFunds$5(TransferServiceConcurrencyTest.java:265)
+

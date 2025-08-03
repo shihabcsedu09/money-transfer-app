@@ -28,21 +28,7 @@ spring:
       password: admin123
   
   cache:
-    type: redis
-    redis:
-      time-to-live: 600000
-
-# Redis Configuration for Distributed Locking
-spring:
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 2000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
+    type: simple
 
 # Actuator Configuration
 management:

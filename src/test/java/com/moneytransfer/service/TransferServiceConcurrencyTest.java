@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,8 +33,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Deadlock prevention
  * - Proper handling of concurrent transfers
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "spring.cache.type=simple",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.datasource.url=jdbc:h2:mem:testdb"
+})
 public class TransferServiceConcurrencyTest {
 
     @Autowired
@@ -50,12 +56,16 @@ public class TransferServiceConcurrencyTest {
 
     @BeforeEach
     void setUp() {
+        // Clean up any existing data
+        transferRepository.deleteAll();
+        accountRepository.deleteAll();
+        
         // Create test accounts
-        account1 = new Account("TEST001", "user1", "Test User 1", Currency.USD);
+        account1 = new Account("TEST001234567890", "user1", "Test User 1", Currency.USD);
         account1.setBalance(new BigDecimal("1000.00"));
         account1 = accountRepository.save(account1);
 
-        account2 = new Account("TEST002", "user2", "Test User 2", Currency.USD);
+        account2 = new Account("TEST002345678901", "user2", "Test User 2", Currency.USD);
         account2.setBalance(new BigDecimal("500.00"));
         account2 = accountRepository.save(account2);
     }
