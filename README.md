@@ -165,9 +165,44 @@ void testConcurrentTransfers() {
 
 ## 🚀 Live Demo
 
-**Deployed on Railway!** 
+**Ready for Deployment!** 
 
-🌐 **Live Application**: https://money-transfer-app-production.up.railway.app
+### **Deploy to Railway (Free)**
+
+1. **Sign up**: Go to [railway.app](https://railway.app) and sign up with GitHub
+2. **Connect repo**: Select "Deploy from GitHub repo" → `shihabcsedu09/money-transfer-app`
+3. **Configure**: Add environment variables:
+   ```
+   SPRING_PROFILES_ACTIVE=prod
+   SERVER_PORT=8080
+   SPRING_CACHE_TYPE=simple
+   ```
+4. **Deploy**: Railway will automatically build and deploy
+
+### **Deploy to Render (Alternative)**
+
+1. **Sign up**: Go to [render.com](https://render.com) and sign up with GitHub
+2. **Connect repo**: Select "New Web Service" → Connect your GitHub repo
+3. **Configure**: Use the `render.yaml` file in this repo
+4. **Deploy**: Render will automatically deploy
+
+### **Local Testing**
+
+```bash
+# Run locally
+mvn spring-boot:run
+
+# Test API
+curl -X POST http://localhost:8080/api/v1/transfers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromAccountNumber": "ACC001234567890",
+    "toAccountNumber": "ACC002345678901", 
+    "amount": 100.00,
+    "currency": "USD",
+    "description": "Test transfer"
+  }'
+```
 
 ### Test the Live API
 
