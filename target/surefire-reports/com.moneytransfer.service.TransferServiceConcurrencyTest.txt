@@ -1,24 +1,24 @@
 -------------------------------------------------------------------------------
 Test set: com.moneytransfer.service.TransferServiceConcurrencyTest
 -------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 4, Skipped: 0, Time elapsed: 6.954 s <<< FAILURE! - in com.moneytransfer.service.TransferServiceConcurrencyTest
-testConcurrentTransfers  Time elapsed: 0.519 s  <<< ERROR!
+Tests run: 5, Failures: 0, Errors: 4, Skipped: 0, Time elapsed: 5.714 s <<< FAILURE! - in com.moneytransfer.service.TransferServiceConcurrencyTest
+testConcurrentTransfers  Time elapsed: 0.681 s  <<< ERROR!
 org.springframework.dao.InvalidDataAccessApiUsageException: no transaction is in progress; nested exception is javax.persistence.TransactionRequiredException: no transaction is in progress
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.testConcurrentTransfers(TransferServiceConcurrencyTest.java:112)
 Caused by: javax.persistence.TransactionRequiredException: no transaction is in progress
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.testConcurrentTransfers(TransferServiceConcurrencyTest.java:112)
 
-testInsufficientFundsHandling  Time elapsed: 0.016 s  <<< ERROR!
+testInsufficientFundsHandling  Time elapsed: 0.021 s  <<< ERROR!
 org.springframework.dao.InvalidDataAccessApiUsageException: no transaction is in progress; nested exception is javax.persistence.TransactionRequiredException: no transaction is in progress
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.testInsufficientFundsHandling(TransferServiceConcurrencyTest.java:214)
 Caused by: javax.persistence.TransactionRequiredException: no transaction is in progress
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.testInsufficientFundsHandling(TransferServiceConcurrencyTest.java:214)
 
-testBidirectionalConcurrentTransfers  Time elapsed: 0.044 s  <<< ERROR!
+testBidirectionalConcurrentTransfers  Time elapsed: 0.051 s  <<< ERROR!
 java.util.concurrent.CompletionException: org.opentest4j.AssertionFailedError: Transfer 2 failed: could not extract ResultSet; SQL [n/a]; nested exception is org.hibernate.exception.LockAcquisitionException: could not extract ResultSet
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.lambda$testBidirectionalConcurrentTransfers$2(TransferServiceConcurrencyTest.java:174)
 
-testConcurrentInsufficientFunds  Time elapsed: 0.047 s  <<< ERROR!
+testConcurrentInsufficientFunds  Time elapsed: 0.054 s  <<< ERROR!
 org.springframework.dao.InvalidDataAccessApiUsageException: no transaction is in progress; nested exception is javax.persistence.TransactionRequiredException: no transaction is in progress
 	at com.moneytransfer.service.TransferServiceConcurrencyTest.testConcurrentInsufficientFunds(TransferServiceConcurrencyTest.java:282)
 Caused by: javax.persistence.TransactionRequiredException: no transaction is in progress
