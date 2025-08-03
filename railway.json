@@ -26,7 +26,8 @@
         "MANAGEMENT_METRICS_ENABLE_JVM": "false",
         "MANAGEMENT_METRICS_ENABLE_PROCESSOR": "false",
         "MANAGEMENT_METRICS_ENABLE_SYSTEM": "false",
-        "SPRING_AUTOCONFIGURE_EXCLUDE": "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration"
+        "MANAGEMENT_METRICS_ENABLE_TOMCAT": "false",
+        "SPRING_AUTOCONFIGURE_EXCLUDE": "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration"
       }
     }
   }

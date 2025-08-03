@@ -25,5 +25,6 @@ java -Dmanagement.metrics.binders.processor.enabled=false \
      -Dmanagement.metrics.enable.jvm=false \
      -Dmanagement.metrics.enable.processor=false \
      -Dmanagement.metrics.enable.system=false \
-     -Dspring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration \
+     -Dmanagement.metrics.enable.tomcat=false \
+     -Dspring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration \
      -jar target/money-transfer-app-1.0.0.jar 

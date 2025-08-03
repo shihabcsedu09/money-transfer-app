@@ -54,6 +54,7 @@ management:
       jvm: false
       processor: false
       system: false
+      tomcat: false
 
 # Application Specific Configuration
 app:

@@ -11,7 +11,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 @Configuration
 @EnableAutoConfiguration(exclude = {
     org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration.class,
-    org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration.class
+    org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration.class,
+    org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration.class
 })
 @ConditionalOnProperty(name = "spring.profiles.active", havingValue = "prod")
 public class MetricsConfig {
