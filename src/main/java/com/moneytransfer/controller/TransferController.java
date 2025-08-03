@@ -6,6 +6,7 @@ import com.moneytransfer.exception.InsufficientFundsException;
 import com.moneytransfer.exception.TransferException;
 import com.moneytransfer.service.TransferService;
 import com.moneytransfer.repository.AccountRepository;
+import java.util.stream.Collectors;
 import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public class TransferController {
                     "balance", account.getBalance(),
                     "currency", account.getCurrency().name()
                 ))
-                .toList());
+                .collect(Collectors.toList()));
         }
         
         response.put("message", accountCount > 0 ? "Accounts found" : "No accounts found");
