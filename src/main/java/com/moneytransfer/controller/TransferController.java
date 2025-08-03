@@ -74,37 +74,5 @@ public class TransferController {
         }
     }
 
-    /**
-     * Health check endpoint.
-     */
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        Map<String, Object> health = new HashMap<>();
-        health.put("status", "UP");
-        health.put("service", "Money Transfer Service");
-        health.put("timestamp", System.currentTimeMillis());
-        return ResponseEntity.ok(health);
-    }
 
-    /**
-     * Root endpoint for basic connectivity test.
-     */
-    @GetMapping("/")
-    public ResponseEntity<Map<String, Object>> root() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Money Transfer Service is running");
-        response.put("status", "UP");
-        response.put("timestamp", System.currentTimeMillis());
-        response.put("port", System.getProperty("server.port", "8080"));
-        response.put("profile", System.getProperty("spring.profiles.active", "default"));
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Simple ping endpoint for health checks.
-     */
-    @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("pong");
-    }
 } 
