@@ -1,0 +1,83 @@
+spring:
+  application:
+    name: money-transfer-app
+  
+  datasource:
+    url: jdbc:h2:mem:moneytransferdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  security:
+    user:
+      name: admin
+      password: admin123
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
+# Redis Configuration for Distributed Locking
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Application Specific Configuration
+app:
+  transfer:
+    max-amount: 1000000.00
+    min-amount: 0.01
+    lock-timeout: 30
+    retry-attempts: 3
+    concurrent-transfers-limit: 100
+  
+  security:
+    jwt:
+      secret: your-secret-key-here-make-it-very-long-and-secure
+      expiration: 86400000 # 24 hours
+
+# Logging Configuration
+logging:
+  level:
+    com.moneytransfer: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n" 
