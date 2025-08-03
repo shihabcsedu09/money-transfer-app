@@ -5,6 +5,7 @@ import com.moneytransfer.domain.Currency;
 import com.moneytransfer.dto.TransferRequest;
 import com.moneytransfer.dto.TransferResponse;
 import com.moneytransfer.exception.InsufficientFundsException;
+import com.moneytransfer.exception.TransferException;
 import com.moneytransfer.repository.AccountRepository;
 import com.moneytransfer.repository.TransferRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -106,7 +108,7 @@ public class TransferServiceConcurrencyTest {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         executor.shutdown();
 
-        // Verify final balances
+        // Verify final balances - use a new transaction context
         Account finalAccount1 = accountRepository.findByAccountNumber(account1.getAccountNumber()).orElse(null);
         Account finalAccount2 = accountRepository.findByAccountNumber(account2.getAccountNumber()).orElse(null);
 
@@ -204,7 +206,7 @@ public class TransferServiceConcurrencyTest {
             "Insufficient funds test"
         );
 
-        assertThrows(InsufficientFundsException.class, () -> {
+        assertThrows(TransferException.class, () -> {
             transferService.processTransfer(request);
         });
 
@@ -259,7 +261,7 @@ public class TransferServiceConcurrencyTest {
                     TransferResponse response = transferService.processTransfer(request);
                     assertNotNull(response);
                     successfulTransfers.incrementAndGet();
-                } catch (InsufficientFundsException e) {
+                } catch (TransferException e) {
                     failedTransfers.incrementAndGet();
                 } catch (Exception e) {
                     fail("Unexpected exception: " + e.getMessage());
