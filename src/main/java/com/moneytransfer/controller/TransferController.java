@@ -95,6 +95,16 @@ public class TransferController {
         response.put("message", "Money Transfer Service is running");
         response.put("status", "UP");
         response.put("timestamp", System.currentTimeMillis());
+        response.put("port", System.getProperty("server.port", "8080"));
+        response.put("profile", System.getProperty("spring.profiles.active", "default"));
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Simple ping endpoint for health checks.
+     */
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
     }
 } 

@@ -12,8 +12,14 @@ RUN ./mvnw dependency:go-offline -B
 # Copy source code
 COPY src ./src
 
+# Copy startup script
+COPY start.sh ./start.sh
+
 # Build the application
 RUN ./mvnw clean package -DskipTests
+
+# Make startup script executable
+RUN chmod +x start.sh
 
 # Create a non-root user
 RUN addgroup --system javauser && adduser --system --ingroup javauser javauser
@@ -28,4 +34,4 @@ USER javauser
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "target/money-transfer-app-1.0.0.jar"] 
+ENTRYPOINT ["./start.sh"] 
