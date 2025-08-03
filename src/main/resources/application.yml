@@ -50,6 +50,10 @@ management:
         enabled: false
       system:
         enabled: false
+    enable:
+      jvm: false
+      processor: false
+      system: false
 
 # Application Specific Configuration
 app:

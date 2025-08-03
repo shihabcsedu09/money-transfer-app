@@ -22,4 +22,8 @@ echo "Starting application..."
 java -Dmanagement.metrics.binders.processor.enabled=false \
      -Dmanagement.metrics.binders.jvm.enabled=false \
      -Dmanagement.metrics.binders.system.enabled=false \
+     -Dmanagement.metrics.enable.jvm=false \
+     -Dmanagement.metrics.enable.processor=false \
+     -Dmanagement.metrics.enable.system=false \
+     -Dspring.autoconfigure.exclude=org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration \
      -jar target/money-transfer-app-1.0.0.jar 

@@ -22,7 +22,11 @@
         "MANAGEMENT_ENDPOINT_HEALTH_SHOW-DETAILS": "always",
         "MANAGEMENT_METRICS_BINDERS_PROCESSOR_ENABLED": "false",
         "MANAGEMENT_METRICS_BINDERS_JVM_ENABLED": "false",
-        "MANAGEMENT_METRICS_BINDERS_SYSTEM_ENABLED": "false"
+        "MANAGEMENT_METRICS_BINDERS_SYSTEM_ENABLED": "false",
+        "MANAGEMENT_METRICS_ENABLE_JVM": "false",
+        "MANAGEMENT_METRICS_ENABLE_PROCESSOR": "false",
+        "MANAGEMENT_METRICS_ENABLE_SYSTEM": "false",
+        "SPRING_AUTOCONFIGURE_EXCLUDE": "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration,org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration"
       }
     }
   }

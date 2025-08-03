@@ -45,6 +45,10 @@ management:
         enabled: false
       system:
         enabled: false
+    enable:
+      jvm: false
+      processor: false
+      system: false
 
 # Server Configuration
 server:
