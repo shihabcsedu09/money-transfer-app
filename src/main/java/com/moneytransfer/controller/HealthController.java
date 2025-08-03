@@ -35,6 +35,7 @@ public class HealthController {
         response.put("timestamp", System.currentTimeMillis());
         response.put("port", System.getProperty("server.port", "8080"));
         response.put("profile", System.getProperty("spring.profiles.active", "default"));
+        response.put("env_profile", System.getenv("SPRING_PROFILES_ACTIVE"));
         response.put("version", "1.0.0");
         return ResponseEntity.ok(response);
     }
