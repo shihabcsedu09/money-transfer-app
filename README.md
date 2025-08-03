@@ -27,14 +27,11 @@ Financial applications must handle multiple users transferring money simultaneou
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Java 17+
-- Redis (for distributed locking)
+- Java 11+
+- Maven
 
 ### Run Locally
 ```bash
-# Start Redis
-docker run -d -p 6379:6379 redis:latest
-
 # Run the application
 mvn spring-boot:run
 ```
@@ -58,17 +55,33 @@ curl http://localhost:8080/api/v1/transfers/{transferId}
 
 ## 🔧 How Concurrency is Handled
 
-### 1. Distributed Locking
+### 1. **Distributed Locking** - Preventing Race Conditions
+
+**The Problem**: Imagine two people trying to withdraw money from the same account at exactly the same time. Both see the balance is $1000, both try to withdraw $800. Without locking, both might succeed, leaving the account with -$600 instead of $200!
+
+**The Solution**: We use locks to ensure only one transfer can access an account at a time.
+
 ```java
 // Lock both accounts before transfer
-RLock fromAccountLock = redissonClient.getLock("account:" + fromAccountNumber);
-RLock toAccountLock = redissonClient.getLock("account:" + toAccountNumber);
+ReentrantLock fromAccountLock = accountLocks.computeIfAbsent(fromAccountNumber, k -> new ReentrantLock());
+ReentrantLock toAccountLock = accountLocks.computeIfAbsent(toAccountNumber, k -> new ReentrantLock());
 
 // Acquire locks with timeout
 boolean firstLockAcquired = firstLock.tryLock(lockTimeout, TimeUnit.SECONDS);
 ```
 
-### 2. Deadlock Prevention
+**How it helps**: 
+- When Transfer A starts, it locks Account 1
+- Transfer B tries to lock Account 1, but it's already locked
+- Transfer B waits until Transfer A finishes
+- This prevents both transfers from reading the same balance
+
+### 2. **Deadlock Prevention** - Avoiding Infinite Waits
+
+**The Problem**: Transfer A locks Account 1, then tries to lock Account 2. Transfer B locks Account 2, then tries to lock Account 1. Both are waiting for each other forever!
+
+**The Solution**: Always lock accounts in alphabetical order.
+
 ```java
 // Always lock in alphabetical order
 boolean isFromAccountFirst = fromAccountNumber.compareTo(toAccountNumber) <= 0;
@@ -81,7 +94,18 @@ if (isFromAccountFirst) {
 }
 ```
 
-### 3. Atomic Transactions
+**How it helps**:
+- If Transfer A wants to lock ACC001 and ACC002, it locks ACC001 first
+- If Transfer B wants to lock ACC002 and ACC001, it locks ACC001 first
+- Both transfers try to lock the same account first, so one waits for the other
+- No circular waiting = no deadlock!
+
+### 3. **Atomic Transactions** - All-or-Nothing Operations
+
+**The Problem**: What if we successfully debit $100 from Account A, but then the credit to Account B fails? The money disappears into thin air!
+
+**The Solution**: Database transactions ensure everything succeeds or everything fails.
+
 ```java
 @Transactional
 protected void executeTransfer(Transfer transfer) {
@@ -101,12 +125,23 @@ protected void executeTransfer(Transfer transfer) {
 }
 ```
 
-### 4. Optimistic Locking
+**How it helps**:
+- If anything fails, the entire transfer is cancelled
+- The database automatically rolls back all changes
+- No money can be lost or created out of thin air
+- Account balances always stay mathematically correct
+
+### 4. **Optimistic Locking** - Version-Based Concurrency Control
+
+**The Problem**: Two transfers read the same account balance at the same time. Both see $1000, both calculate the new balance as $900, both save $900. The final balance is wrong!
+
+**The Solution**: Each account has a version number that changes when the account is modified.
+
 ```java
 @Entity
 public class Account {
     @Version
-    private Long version; // Prevents concurrent modifications
+    private Long version; // This number changes every time the account is updated
     
     public synchronized boolean debit(BigDecimal amount) {
         if (balance.compareTo(amount) < 0) {
@@ -117,6 +152,35 @@ public class Account {
     }
 }
 ```
+
+**How it helps**:
+- When Transfer A reads the account, it gets version 5
+- When Transfer B reads the account, it also gets version 5
+- Transfer A saves with version 5 → succeeds, version becomes 6
+- Transfer B tries to save with version 5 → fails because version is now 6
+- Transfer B gets an error and retries with the new balance
+- This prevents overwriting each other's changes
+
+### 5. **Synchronized Methods** - Thread-Safe Balance Operations
+
+**The Problem**: Even with all the above, what if two threads try to modify the same account object in memory at the same time?
+
+**The Solution**: The `synchronized` keyword ensures only one thread can execute these methods at a time.
+
+```java
+public synchronized boolean debit(BigDecimal amount) {
+    if (balance.compareTo(amount) < 0) {
+        return false;
+    }
+    balance = balance.subtract(amount);
+    return true;
+}
+```
+
+**How it helps**:
+- When Thread A calls `debit()`, Thread B must wait
+- This prevents two threads from reading and writing the balance simultaneously
+- Ensures the balance calculation is always accurate
 
 ## 🧪 Concurrency Testing
 
@@ -165,26 +229,40 @@ void testConcurrentTransfers() {
 
 ## 🚀 Live Demo
 
-**Ready for Deployment!** 
+**This application is deployed and running on Railway!**
 
-### **Deploy to Railway (Free)**
+### **Live API URL**: https://money-transfer-app-production-9d8e.up.railway.app
 
-1. **Sign up**: Go to [railway.app](https://railway.app) and sign up with GitHub
-2. **Connect repo**: Select "Deploy from GitHub repo" → `shihabcsedu09/money-transfer-app`
-3. **Configure**: Add environment variables:
-   ```
-   SPRING_PROFILES_ACTIVE=prod
-   SERVER_PORT=8080
-   SPRING_CACHE_TYPE=simple
-   ```
-4. **Deploy**: Railway will automatically build and deploy
+### Test the Live API
 
-### **Deploy to Render (Alternative)**
+```bash
+# Transfer money
+curl -X POST https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromAccountNumber": "ACC001234567890",
+    "toAccountNumber": "ACC002345678901", 
+    "amount": 100.00,
+    "currency": "USD",
+    "description": "Test transfer"
+  }'
 
-1. **Sign up**: Go to [render.com](https://render.com) and sign up with GitHub
-2. **Connect repo**: Select "New Web Service" → Connect your GitHub repo
-3. **Configure**: Use the `render.yaml` file in this repo
-4. **Deploy**: Render will automatically deploy
+# Check transfer status
+curl https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/{transferId}
+
+# Health check
+curl https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/health
+```
+
+### Sample Account Numbers for Testing
+- `ACC001234567890` - John Doe (USD: $10,000)
+- `ACC002345678901` - John Doe (EUR: €8,500)
+- `ACC003456789012` - Jane Smith (USD: $5,000)
+- `ACC004567890123` - Jane Smith (GBP: £3,000)
+- `ACC005678901234` - Bob Johnson (USD: $7,500)
+- `ACC006789012345` - Alice Brown (EUR: €12,000)
+- `ACC007890123456` - Charlie Wilson (GBP: £4,500)
+- `ACC008901234567` - Diana Davis (USD: $2,000)
 
 ### **Local Testing**
 
@@ -203,37 +281,6 @@ curl -X POST http://localhost:8080/api/v1/transfers \
     "description": "Test transfer"
   }'
 ```
-
-### Test the Live API
-
-```bash
-# Transfer money
-curl -X POST https://money-transfer-app-production.up.railway.app/api/v1/transfers \
-  -H "Content-Type: application/json" \
-  -d '{
-    "fromAccountNumber": "ACC001234567890",
-    "toAccountNumber": "ACC002345678901", 
-    "amount": 100.00,
-    "currency": "USD",
-    "description": "Test transfer"
-  }'
-
-# Check transfer status
-curl https://money-transfer-app-production.up.railway.app/api/v1/transfers/{transferId}
-
-# Health check
-curl https://money-transfer-app-production.up.railway.app/api/v1/transfers/health
-```
-
-### Sample Account Numbers for Testing
-- `ACC001234567890` - John Doe (USD: $10,000)
-- `ACC002345678901` - John Doe (EUR: €8,500)
-- `ACC003456789012` - Jane Smith (USD: $5,000)
-- `ACC004567890123` - Jane Smith (GBP: £3,000)
-- `ACC005678901234` - Bob Johnson (USD: $7,500)
-- `ACC006789012345` - Alice Brown (EUR: €12,000)
-- `ACC007890123456` - Charlie Wilson (GBP: £4,500)
-- `ACC008901234567` - Diana Davis (USD: $2,000)
 
 ## 📝 License
 
