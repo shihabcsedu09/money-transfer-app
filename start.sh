@@ -19,4 +19,7 @@ fi
 
 # Start the application
 echo "Starting application..."
-java -jar target/money-transfer-app-1.0.0.jar 
+java -Dmanagement.metrics.binders.processor.enabled=false \
+     -Dmanagement.metrics.binders.jvm.enabled=false \
+     -Dmanagement.metrics.binders.system.enabled=false \
+     -jar target/money-transfer-app-1.0.0.jar 
