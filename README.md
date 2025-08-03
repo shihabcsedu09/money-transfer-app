@@ -255,7 +255,7 @@ void testMultipleTransfers() {
 # Health check (no authentication required)
 curl https://money-transfer-app-production-9d8e.up.railway.app/ping
 
-# Root endpoint
+# Root endpoint with profile info
 curl https://money-transfer-app-production-9d8e.up.railway.app/
 
 # Transfer money (requires authentication)
@@ -275,10 +275,44 @@ curl -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
   https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers/{transferId}
 ```
 
+### Expected API Response
+
+When you run the transfer command, you should get a response like this:
+
+```json
+{
+  "transferId": "transfer_1234567890",
+  "status": "COMPLETED",
+  "fromAccountNumber": "ACC001234567890",
+  "toAccountNumber": "ACC002345678901",
+  "amount": 100.00,
+  "currency": "USD",
+  "description": "Test transfer",
+  "timestamp": "2025-08-03T17:46:00.000Z"
+}
+```
+
 ### Authentication
 - **Username**: `admin`
 - **Password**: `admin123`
 - **Basic Auth Header**: `Authorization: Basic YWRtaW46YWRtaW4xMjM=`
+
+### Troubleshooting
+
+If you get a 401 Unauthorized error:
+1. Make sure you're using the correct authentication header
+2. Check that the application is running in production mode (profile should be "prod")
+3. Verify the accounts exist in the database
+
+If you get a 404 Not Found error:
+1. Check that the endpoint URL is correct
+2. Ensure the application is deployed and running
+3. Try the health check endpoint first: `curl https://money-transfer-app-production-9d8e.up.railway.app/ping`
+
+If you get no response:
+1. Add the `-v` flag to curl for verbose output: `curl -v ...`
+2. Check if the application is still deploying
+3. Wait a few minutes and try again
 
 ### Sample Account Numbers for Testing
 - `ACC001234567890` - John Doe (USD: $10,000)
