@@ -9,8 +9,6 @@ import com.moneytransfer.exception.InsufficientFundsException;
 import com.moneytransfer.exception.TransferException;
 import com.moneytransfer.repository.AccountRepository;
 import com.moneytransfer.repository.TransferRepository;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Core service for handling money transfers with distributed locking and atomic operations.
@@ -39,7 +39,7 @@ public class TransferService {
 
     private final TransferRepository transferRepository;
     private final AccountRepository accountRepository;
-    private final RedissonClient redissonClient;
+    private final ConcurrentHashMap<String, ReentrantLock> accountLocks = new ConcurrentHashMap<>();
 
     @Value("${app.transfer.lock-timeout:30}")
     private int lockTimeout;
@@ -54,11 +54,9 @@ public class TransferService {
     private BigDecimal minTransferAmount;
 
     public TransferService(TransferRepository transferRepository, 
-                         AccountRepository accountRepository,
-                         RedissonClient redissonClient) {
+                         AccountRepository accountRepository) {
         this.transferRepository = transferRepository;
         this.accountRepository = accountRepository;
-        this.redissonClient = redissonClient;
     }
 
     /**
@@ -91,18 +89,18 @@ public class TransferService {
     }
 
     /**
-     * Process transfer with distributed locking to prevent race conditions.
+     * Process transfer with in-memory locking to prevent race conditions.
      */
     private void processTransferWithLocking(Transfer transfer) {
         String fromAccountNumber = transfer.getFromAccount().getAccountNumber();
         String toAccountNumber = transfer.getToAccount().getAccountNumber();
 
-        // Create distributed locks for both accounts
-        RLock fromAccountLock = redissonClient.getLock("account:" + fromAccountNumber);
-        RLock toAccountLock = redissonClient.getLock("account:" + toAccountNumber);
+        // Create locks for both accounts
+        ReentrantLock fromAccountLock = accountLocks.computeIfAbsent(fromAccountNumber, k -> new ReentrantLock());
+        ReentrantLock toAccountLock = accountLocks.computeIfAbsent(toAccountNumber, k -> new ReentrantLock());
 
         // Determine lock order to prevent deadlocks (always lock in alphabetical order)
-        RLock firstLock, secondLock;
+        ReentrantLock firstLock, secondLock;
         Account firstAccount, secondAccount;
         boolean isFromAccountFirst = fromAccountNumber.compareTo(toAccountNumber) <= 0;
 

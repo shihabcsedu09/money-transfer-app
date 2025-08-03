@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: money-transfer-app
+  
+  datasource:
+    url: jdbc:h2:mem:moneytransferdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: false
+
+# Disable Redis for production deployment
+spring:
+  cache:
+    type: simple
+
+# Application Specific Configuration
+app:
+  transfer:
+    max-amount: 1000000.00
+    min-amount: 0.01
+    lock-timeout: 30
+    retry-attempts: 3
+    concurrent-transfers-limit: 100
+  
+  security:
+    jwt:
+      secret: your-secret-key-here-make-it-very-long-and-secure
+      expiration: 86400000 # 24 hours
+
+# Logging Configuration
+logging:
+  level:
+    com.moneytransfer: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Server Configuration
+server:
+  port: 8080 

@@ -165,7 +165,40 @@ void testConcurrentTransfers() {
 
 ## 🚀 Live Demo
 
-**Coming soon!** This application will be deployed to a free platform for live testing.
+**Deployed on Railway!** 
+
+🌐 **Live Application**: https://money-transfer-app-production.up.railway.app
+
+### Test the Live API
+
+```bash
+# Transfer money
+curl -X POST https://money-transfer-app-production.up.railway.app/api/v1/transfers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromAccountNumber": "ACC001234567890",
+    "toAccountNumber": "ACC002345678901", 
+    "amount": 100.00,
+    "currency": "USD",
+    "description": "Test transfer"
+  }'
+
+# Check transfer status
+curl https://money-transfer-app-production.up.railway.app/api/v1/transfers/{transferId}
+
+# Health check
+curl https://money-transfer-app-production.up.railway.app/api/v1/transfers/health
+```
+
+### Sample Account Numbers for Testing
+- `ACC001234567890` - John Doe (USD: $10,000)
+- `ACC002345678901` - John Doe (EUR: €8,500)
+- `ACC003456789012` - Jane Smith (USD: $5,000)
+- `ACC004567890123` - Jane Smith (GBP: £3,000)
+- `ACC005678901234` - Bob Johnson (USD: $7,500)
+- `ACC006789012345` - Alice Brown (EUR: €12,000)
+- `ACC007890123456` - Charlie Wilson (GBP: £4,500)
+- `ACC008901234567` - Diana Davis (USD: $2,000)
 
 ## 📝 License
 
