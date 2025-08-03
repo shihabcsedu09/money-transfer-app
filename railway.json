@@ -5,8 +5,8 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "java -jar target/money-transfer-app-1.0.0.jar",
-    "healthcheckPath": "/actuator/health",
+    "startCommand": "java -Dserver.port=$PORT -jar target/money-transfer-app-1.0.0.jar",
+    "healthcheckPath": "/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
@@ -18,7 +18,9 @@
         "SERVER_PORT": "8080",
         "SPRING_CACHE_TYPE": "simple",
         "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE": "health,info,metrics",
-        "MANAGEMENT_ENDPOINT_HEALTH_SHOW-DETAILS": "always"
+        "MANAGEMENT_ENDPOINT_HEALTH_SHOW-DETAILS": "always",
+        "LOGGING_LEVEL_ROOT": "INFO",
+        "LOGGING_LEVEL_COM_MONEYTRANSFER": "DEBUG"
       }
     }
   }

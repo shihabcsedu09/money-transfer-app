@@ -85,4 +85,16 @@ public class TransferController {
         health.put("timestamp", System.currentTimeMillis());
         return ResponseEntity.ok(health);
     }
+
+    /**
+     * Root endpoint for basic connectivity test.
+     */
+    @GetMapping("/")
+    public ResponseEntity<Map<String, Object>> root() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Money Transfer Service is running");
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
+    }
 } 

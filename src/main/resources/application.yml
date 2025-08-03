@@ -58,6 +58,10 @@ app:
       secret: your-secret-key-here-make-it-very-long-and-secure
       expiration: 86400000 # 24 hours
 
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+
 # Logging Configuration
 logging:
   level:
