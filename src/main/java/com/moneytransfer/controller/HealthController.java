@@ -1,5 +1,6 @@
 package com.moneytransfer.controller;
 
+import com.moneytransfer.repository.AccountRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,12 @@ import java.util.Map;
  */
 @RestController
 public class HealthController {
+
+    private final AccountRepository accountRepository;
+
+    public HealthController(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     /**
      * Simple ping endpoint for Railway health checks.
@@ -53,5 +60,15 @@ public class HealthController {
         health.put("timestamp", System.currentTimeMillis());
         health.put("version", "1.0.0");
         return ResponseEntity.ok(health);
+    }
+
+    @GetMapping("/accounts")
+    public ResponseEntity<Map<String, Object>> checkAccounts() {
+        Map<String, Object> response = new HashMap<>();
+        long accountCount = accountRepository.count();
+        response.put("totalAccounts", accountCount);
+        response.put("message", accountCount > 0 ? "Accounts found" : "No accounts found");
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
     }
 } 
