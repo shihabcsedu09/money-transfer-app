@@ -258,13 +258,16 @@ curl https://money-transfer-app-production-9d8e.up.railway.app/ping
 # Root endpoint with profile info
 curl https://money-transfer-app-production-9d8e.up.railway.app/
 
+# Check accounts (no authentication required)
+curl https://money-transfer-app-production-9d8e.up.railway.app/accounts
+
 # Transfer money (requires authentication)
 curl -X POST https://money-transfer-app-production-9d8e.up.railway.app/api/v1/transfers \
   -H "Content-Type: application/json" \
   -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" \
   -d '{
     "fromAccountNumber": "ACC001234567890",
-    "toAccountNumber": "ACC002345678901", 
+    "toAccountNumber": "ACC003456789012", 
     "amount": 100.00,
     "currency": "USD",
     "description": "Test transfer"
@@ -281,14 +284,17 @@ When you run the transfer command, you should get a response like this:
 
 ```json
 {
-  "transferId": "transfer_1234567890",
-  "status": "COMPLETED",
+  "transferId": "TXN-609BCF2060E94639",
   "fromAccountNumber": "ACC001234567890",
-  "toAccountNumber": "ACC002345678901",
+  "toAccountNumber": "ACC003456789012",
   "amount": 100.00,
   "currency": "USD",
+  "status": "COMPLETED",
   "description": "Test transfer",
-  "timestamp": "2025-08-03T17:46:00.000Z"
+  "failureReason": null,
+  "createdAt": "2025-08-04T07:22:20.77312",
+  "processedAt": "2025-08-04T07:22:20.774722",
+  "completedAt": "2025-08-04T07:22:20.775524"
 }
 ```
 
