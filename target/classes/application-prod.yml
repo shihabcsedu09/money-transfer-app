@@ -21,6 +21,11 @@ spring:
     console:
       enabled: false
   
+  security:
+    user:
+      name: admin
+      password: admin123
+  
   cache:
     type: simple
 
