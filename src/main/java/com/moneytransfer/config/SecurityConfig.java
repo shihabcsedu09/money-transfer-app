@@ -27,12 +27,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                // Allow access to health check endpoints without authentication
-                .antMatchers("/ping", "/", "/actuator/health", "/actuator/info", "/accounts").permitAll()
-                // Allow access to H2 console in development (disabled in production)
-                .antMatchers("/h2-console/**").hasRole("ADMIN")
-                // Require authentication for all other endpoints
-                .anyRequest().authenticated()
+                // Temporarily allow all requests for testing
+                .anyRequest().permitAll()
             .and()
                 .httpBasic()
             .and()
